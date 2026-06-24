@@ -143,6 +143,22 @@
       flex-direction: column;
     }
 
+    .right-column {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+    }
+
+    .mini-panel {
+      background: var(--card);
+      border: 1px solid rgba(203, 213, 225, 0.85);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      padding: 14px;
+    }
+
     .panel-header {
       display: flex;
       justify-content: space-between;
@@ -219,17 +235,31 @@
       gap: 8px;
     }
 
-    .compact-row {
+    .prep-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .memo-row {
       display: grid;
       grid-template-columns: 1fr auto auto;
       gap: 8px;
       align-items: end;
     }
 
+    .file-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
     #archiveMemo {
-      height: 64px;
-      min-height: 64px;
-      max-height: 120px;
+      height: 38px;
+      min-height: 38px;
+      max-height: 90px;
       font-family:
         ui-monospace,
         SFMono-Regular,
@@ -256,7 +286,7 @@
     .compact-note {
       color: var(--muted);
       font-size: 11px;
-      margin: 3px 0 0;
+      margin: 4px 0 0;
       min-height: 14px;
     }
 
@@ -414,6 +444,14 @@
         grid-template-columns: 1fr;
       }
 
+      .right-column {
+        grid-template-rows: auto auto;
+      }
+
+      .prep-grid {
+        grid-template-columns: 1fr;
+      }
+
       .panel {
         overflow: visible;
       }
@@ -443,7 +481,7 @@
         <div class="logo">M</div>
         <div>
           <h1>Media Archive Upload</h1>
-          <p class="subtitle">左でプレビュー、右で保存情報を編集</p>
+          <p class="subtitle">左でプレビュー、右上で保存準備、右下で保存情報を編集</p>
         </div>
       </div>
 
@@ -484,89 +522,101 @@
         </div>
       </section>
 
-      <section class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">保存情報</h2>
-          <span class="badge">Record</span>
-        </div>
+      <section class="right-column">
+        <section class="mini-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">保存準備</h2>
+            <span class="badge">Memo / File</span>
+          </div>
 
-        <form id="uploadForm" class="form-scroll">
-          <div class="grid-2">
+          <div class="prep-grid">
             <div>
-              <label>タイトル</label>
-              <input name="title" required placeholder="例：かわいい猫の温かいポートレート" />
+              <div class="memo-row">
+                <div>
+                  <label>保存用メモ</label>
+                  <textarea id="archiveMemo" placeholder="# メディアアーカイブ保存用メモ"></textarea>
+                </div>
+
+                <button type="button" id="parseMemoButton">自動入力</button>
+                <button type="button" id="clearMemoButton" class="ghost">クリア</button>
+              </div>
+
+              <p id="parseStatus" class="compact-note"></p>
             </div>
 
+            <div class="file-row">
+              <div>
+                <label>画像選択</label>
+                <input class="file-visible" type="file" name="file" accept="image/*" form="uploadForm" required />
+              </div>
+
+              <button type="button" id="clearFileButton" class="ghost">画像解除</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">保存情報</h2>
+            <span class="badge">Record</span>
+          </div>
+
+          <form id="uploadForm" class="form-scroll">
+            <div class="grid-2">
+              <div>
+                <label>タイトル</label>
+                <input name="title" required placeholder="例：かわいい猫の温かいポートレート" />
+              </div>
+
+              <div>
+                <label>種別</label>
+                <input name="kind" value="visual_asset" />
+              </div>
+            </div>
+
+            <label>タグ（カンマ区切り）</label>
+            <input name="tags" placeholder="猫, ポートレート, かわいい, 室内" />
+
+            <div class="grid-2">
+              <div>
+                <label>キャラクター名</label>
+                <input name="character_names" placeholder="例：ナガノAI, ナガノ玄" />
+              </div>
+
+              <div>
+                <label>プロジェクト名</label>
+                <input name="project_name" placeholder="例：メディアアーカイブ" />
+              </div>
+            </div>
+
+            <label>元の依頼</label>
+            <textarea name="original_request" placeholder="最初に入力した依頼内容"></textarea>
+
+            <label>要約</label>
+            <textarea name="summary" placeholder="内容の要約"></textarea>
+
+            <label>最終メモ</label>
+            <textarea name="final_note" placeholder="検索・再利用しやすい説明"></textarea>
+          </form>
+
+          <div class="actions-fixed">
             <div>
-              <label>種別</label>
-              <input name="kind" value="visual_asset" />
+              <button type="submit" form="uploadForm">Supabaseへ保存</button>
+              <button type="button" id="clearFormButton" class="ghost">リセット</button>
             </div>
           </div>
 
-          <div class="compact-row">
-            <div>
-              <label>保存用メモ</label>
-              <textarea id="archiveMemo" placeholder="# メディアアーカイブ保存用メモ"></textarea>
-            </div>
-
-            <button type="button" id="parseMemoButton">自動入力</button>
-            <button type="button" id="clearMemoButton" class="ghost">クリア</button>
-          </div>
-
-          <p id="parseStatus" class="compact-note"></p>
-
-          <div class="compact-row">
-            <div>
-              <label>画像選択</label>
-              <input class="file-visible" type="file" name="file" accept="image/*" required />
-            </div>
-
-            <button type="button" id="clearFileButton" class="ghost">画像解除</button>
-            <button type="button" id="dummyButton" class="ghost" style="visibility:hidden;">空</button>
-          </div>
-
-          <label>タグ（カンマ区切り）</label>
-          <input name="tags" placeholder="猫, ポートレート, かわいい, 室内" />
-
-          <div class="grid-2">
-            <div>
-              <label>キャラクター名</label>
-              <input name="character_names" placeholder="例：ナガノAI, ナガノ玄" />
-            </div>
-
-            <div>
-              <label>プロジェクト名</label>
-              <input name="project_name" placeholder="例：メディアアーカイブ" />
-            </div>
-          </div>
-
-          <label>元の依頼</label>
-          <textarea name="original_request" placeholder="最初に入力した依頼内容"></textarea>
-
-          <label>要約</label>
-          <textarea name="summary" placeholder="内容の要約"></textarea>
-
-          <label>最終メモ</label>
-          <textarea name="final_note" placeholder="検索・再利用しやすい説明"></textarea>
-        </form>
-
-        <div class="actions-fixed">
-          <div>
-            <button type="submit" form="uploadForm">Supabaseへ保存</button>
-            <button type="button" id="clearFormButton" class="ghost">リセット</button>
-          </div>
-        </div>
-
-        <pre id="result" class="hidden"></pre>
+          <pre id="result" class="hidden"></pre>
+        </section>
       </section>
     </section>
   </main>
 
   <script>
-    const FUNCTION_URL = "https://xxxxxxxx.supabase.co/functions/v1/media-archive";
+    const FUNCTION_URL = "https://jkacguhaabaqtrjaahgl.supabase.co/functions/v1/media-archive";
 
     const uploadForm = document.getElementById("uploadForm");
-    const fileInput = uploadForm.elements["file"];
+    const fileInput = document.querySelector('input[name="file"]');
     const archiveMemo = document.getElementById("archiveMemo");
 
     const parseStatus = document.getElementById("parseStatus");
@@ -802,6 +852,10 @@
       setStatus("保存中...", "");
 
       const formData = new FormData(uploadForm);
+
+      if (fileInput.files[0]) {
+        formData.set("file", fileInput.files[0]);
+      }
 
       try {
         const response = await fetch(FUNCTION_URL, {
