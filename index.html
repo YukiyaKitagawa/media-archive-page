@@ -8,11 +8,11 @@
   <style>
     :root {
       --bg: #eef2f7;
-      --card: rgba(255, 255, 255, 0.95);
+      --card: rgba(255, 255, 255, 0.96);
       --text: #0f172a;
       --muted: #64748b;
       --border: #dbe3ee;
-      --accent: #2563eb;
+      --accent: #1687e8;
       --accent2: #06b6d4;
       --success: #059669;
       --success-bg: #ecfdf5;
@@ -207,22 +207,6 @@
       min-height: 52px;
     }
 
-    #archiveMemo {
-      height: 42px;
-      min-height: 42px;
-      max-height: 90px;
-      font-family:
-        ui-monospace,
-        SFMono-Regular,
-        Menlo,
-        Monaco,
-        Consolas,
-        "Liberation Mono",
-        monospace;
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
     .form-scroll {
       min-height: 0;
       overflow: auto;
@@ -235,18 +219,45 @@
       gap: 8px;
     }
 
-    .grid-3 {
+    .compact-row {
       display: grid;
       grid-template-columns: 1fr auto auto;
       gap: 8px;
       align-items: end;
     }
 
-    .button-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-      flex-wrap: wrap;
+    #archiveMemo {
+      height: 64px;
+      min-height: 64px;
+      max-height: 120px;
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        "Liberation Mono",
+        monospace;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .file-visible {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 10px;
+      background: #fff;
+      color: var(--text);
+      font-size: 13px;
+      height: 37px;
+    }
+
+    .compact-note {
+      color: var(--muted);
+      font-size: 11px;
+      margin: 3px 0 0;
+      min-height: 14px;
     }
 
     button {
@@ -261,6 +272,7 @@
       box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
       transition: transform 0.15s ease, filter 0.15s ease;
       white-space: nowrap;
+      height: 37px;
     }
 
     button:hover {
@@ -276,44 +288,6 @@
 
     button.ghost:hover {
       background: #cbd5e1;
-    }
-
-    .file-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      align-items: end;
-    }
-
-    .file-mini {
-      display: block;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 7px 10px;
-      background: #fff;
-      min-height: 36px;
-      cursor: pointer;
-      font-size: 13px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .file-mini:hover {
-      border-color: rgba(37, 99, 235, 0.80);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
-    }
-
-    .file-mini input[type="file"] {
-      display: none;
-    }
-
-    .file-name {
-      color: var(--muted);
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      display: block;
     }
 
     .preview-stack {
@@ -414,13 +388,6 @@
       font-size: 11px;
       max-height: 88px;
       margin: 8px 0 0;
-    }
-
-    .compact-note {
-      color: var(--muted);
-      font-size: 11px;
-      margin: 4px 0 0;
-      min-height: 16px;
     }
 
     .actions-fixed {
@@ -536,7 +503,7 @@
             </div>
           </div>
 
-          <div class="grid-3">
+          <div class="compact-row">
             <div>
               <label>保存用メモ</label>
               <textarea id="archiveMemo" placeholder="# メディアアーカイブ保存用メモ"></textarea>
@@ -548,16 +515,14 @@
 
           <p id="parseStatus" class="compact-note"></p>
 
-          <div class="file-row">
+          <div class="compact-row">
             <div>
               <label>画像選択</label>
-              <label class="file-mini">
-                <input type="file" name="file" accept="image/*" required />
-                <span id="fileName" class="file-name">画像を選択してください</span>
-              </label>
+              <input class="file-visible" type="file" name="file" accept="image/*" required />
             </div>
 
             <button type="button" id="clearFileButton" class="ghost">画像解除</button>
+            <button type="button" id="dummyButton" class="ghost" style="visibility:hidden;">空</button>
           </div>
 
           <label>タグ（カンマ区切り）</label>
@@ -598,7 +563,7 @@
   </main>
 
   <script>
-    const FUNCTION_URL = "https://jkacguhaabaqtrjaahgl.supabase.co/functions/v1/media-archive";
+    const FUNCTION_URL = "https://xxxxxxxx.supabase.co/functions/v1/media-archive";
 
     const uploadForm = document.getElementById("uploadForm");
     const fileInput = uploadForm.elements["file"];
@@ -607,7 +572,6 @@
     const parseStatus = document.getElementById("parseStatus");
     const saveStatus = document.getElementById("saveStatus");
     const result = document.getElementById("result");
-    const fileName = document.getElementById("fileName");
 
     const localPreviewFrame = document.getElementById("localPreviewFrame");
     const localPreviewTitle = document.getElementById("localPreviewTitle");
@@ -758,7 +722,6 @@
       }
 
       if (!file) {
-        fileName.textContent = "画像を選択してください";
         localPreviewTitle.textContent = "選択前";
         localPreviewMeta.textContent = "Local";
         localPreviewFrame.innerHTML = `<div class="empty-preview">選択した画像がここに表示されます</div>`;
@@ -767,7 +730,6 @@
 
       localObjectUrl = URL.createObjectURL(file);
 
-      fileName.textContent = file.name;
       localPreviewTitle.textContent = file.name;
       localPreviewMeta.textContent = `${formatBytes(file.size)}`;
       localPreviewFrame.innerHTML = `<img src="${localObjectUrl}" alt="selected preview">`;
