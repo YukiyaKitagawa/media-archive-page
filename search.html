@@ -47,7 +47,7 @@
       height: 100vh;
       padding: 14px;
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto auto 1fr;
       gap: 12px;
     }
 
@@ -189,8 +189,8 @@
     }
 
     .status {
-      min-height: 38px;
-      padding: 9px 12px;
+      min-height: 34px;
+      padding: 8px 12px;
       border-radius: 12px;
       background: #f1f5f9;
       color: #334155;
@@ -351,7 +351,7 @@
 
     .empty {
       height: 100%;
-      min-height: 260px;
+      min-height: 220px;
       display: grid;
       place-items: center;
       color: var(--muted);
@@ -365,7 +365,7 @@
     .detail {
       min-height: 0;
       display: grid;
-      grid-template-rows: minmax(220px, 0.9fr) auto minmax(220px, 1fr);
+      grid-template-rows: minmax(190px, 0.7fr) auto minmax(260px, 1fr);
       gap: 12px;
       flex: 1;
     }
@@ -419,32 +419,71 @@
       margin-top: 10px;
     }
 
-    .detail-scroll {
+    .memo-scroll {
       min-height: 0;
       overflow: auto;
       border: 1px solid var(--border);
       border-radius: 14px;
       background: #fff;
+      padding: 14px;
+    }
+
+    .memo-block {
+      margin-bottom: 14px;
       padding: 12px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
     }
 
-    .field {
-      margin-bottom: 12px;
+    .memo-block.important {
+      background: #eff6ff;
+      border-color: #bfdbfe;
     }
 
-    .field-label {
-      margin: 0 0 4px;
+    .memo-label {
+      margin: 0 0 6px;
       color: #334155;
       font-size: 12px;
+      font-weight: 950;
+    }
+
+    .memo-value {
+      margin: 0;
+      color: #0f172a;
+      font-size: 14px;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .sub-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .mini-field {
+      padding: 10px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      min-width: 0;
+    }
+
+    .mini-label {
+      margin: 0 0 4px;
+      color: #64748b;
+      font-size: 11px;
       font-weight: 900;
     }
 
-    .field-value {
+    .mini-value {
       margin: 0;
       color: #0f172a;
       font-size: 13px;
-      line-height: 1.65;
-      white-space: pre-wrap;
+      line-height: 1.5;
       word-break: break-word;
     }
 
@@ -509,6 +548,10 @@
       .detail {
         grid-template-rows: 320px auto auto;
       }
+
+      .sub-info {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -558,7 +601,7 @@
       <section class="panel">
         <div class="panel-header">
           <h2 class="panel-title">詳細</h2>
-          <span class="hint">プレビュー / 保存情報</span>
+          <span class="hint">プレビュー / 元の指示 / 要約 / 最終メモ</span>
         </div>
 
         <div id="detail" class="detail">
@@ -571,10 +614,10 @@
             <p class="detail-subtitle">検索結果をクリックすると詳細が表示されます。</p>
           </div>
 
-          <div class="detail-scroll">
-            <div class="field">
-              <p class="field-label">案内</p>
-              <p class="field-value">検索結果を選択すると、ここに保存情報が表示されます。</p>
+          <div class="memo-scroll">
+            <div class="memo-block">
+              <p class="memo-label">案内</p>
+              <p class="memo-value">検索結果を選択すると、ここに「元の指示」「要約」「最終メモ」が表示されます。</p>
             </div>
           </div>
         </div>
@@ -724,10 +767,10 @@
           <p class="detail-subtitle">検索結果をクリックすると詳細が表示されます。</p>
         </div>
 
-        <div class="detail-scroll">
-          <div class="field">
-            <p class="field-label">案内</p>
-            <p class="field-value">検索結果を選択すると、ここに保存情報が表示されます。</p>
+        <div class="memo-scroll">
+          <div class="memo-block">
+            <p class="memo-label">案内</p>
+            <p class="memo-value">検索結果を選択すると、ここに「元の指示」「要約」「最終メモ」が表示されます。</p>
           </div>
         </div>
       `;
@@ -758,7 +801,6 @@
       const originalRequest = item.original_request || "未指定";
       const summary = item.summary || "未指定";
       const finalNote = item.final_note || "未指定";
-      const storageBucket = item.storage_bucket || "未指定";
       const storagePath = item.storage_path || "未指定";
       const createdAt = formatDate(item.created_at);
       const previewUrl = item.preview_url || "";
@@ -783,18 +825,33 @@
           </div>
         </div>
 
-        <div class="detail-scroll">
-          ${fieldHtml("タイトル", title)}
-          ${fieldHtml("種別", kind)}
-          ${fieldHtml("タグ", tags)}
-          ${fieldHtml("キャラクター名", characters)}
-          ${fieldHtml("プロジェクト名", projectName)}
-          ${fieldHtml("元の依頼", originalRequest)}
-          ${fieldHtml("要約", summary)}
-          ${fieldHtml("最終メモ", finalNote)}
-          ${fieldHtml("Storage Bucket", storageBucket, true)}
-          ${fieldHtml("Storage Path", storagePath, true)}
-          ${fieldHtml("作成日時", createdAt)}
+        <div class="memo-scroll">
+          <div class="sub-info">
+            ${miniFieldHtml("種別", kind)}
+            ${miniFieldHtml("キャラクター名", characters)}
+            ${miniFieldHtml("プロジェクト名", projectName)}
+            ${miniFieldHtml("タグ", tags)}
+          </div>
+
+          <div class="memo-block important">
+            <p class="memo-label">元の指示</p>
+            <p class="memo-value">${escapeHtml(originalRequest)}</p>
+          </div>
+
+          <div class="memo-block important">
+            <p class="memo-label">要約</p>
+            <p class="memo-value">${escapeHtml(summary)}</p>
+          </div>
+
+          <div class="memo-block important">
+            <p class="memo-label">最終メモ</p>
+            <p class="memo-value">${escapeHtml(finalNote)}</p>
+          </div>
+
+          <div class="memo-block">
+            <p class="memo-label">Storage Path</p>
+            <p class="memo-value mono">${escapeHtml(storagePath)}</p>
+          </div>
         </div>
       `;
 
@@ -821,11 +878,11 @@
       });
     }
 
-    function fieldHtml(label, value, mono = false) {
+    function miniFieldHtml(label, value) {
       return `
-        <div class="field">
-          <p class="field-label">${escapeHtml(label)}</p>
-          <p class="field-value ${mono ? "mono" : ""}">${escapeHtml(value || "未指定")}</p>
+        <div class="mini-field">
+          <p class="mini-label">${escapeHtml(label)}</p>
+          <p class="mini-value">${escapeHtml(value || "未指定")}</p>
         </div>
       `;
     }
@@ -853,7 +910,7 @@ ${formatArray(item.character_names)}
 
 ${item.project_name || "未指定"}
 
-## 元の依頼
+## 元の指示
 
 ${item.original_request || "未指定"}
 
