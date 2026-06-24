@@ -2,26 +2,23 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>Media Archive</title>
+  <title>Media Archive Upload</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
     :root {
       --bg: #eef2f7;
       --bg2: #f8fafc;
-      --card: rgba(255, 255, 255, 0.92);
+      --card: rgba(255, 255, 255, 0.94);
       --text: #0f172a;
       --muted: #64748b;
       --border: #dbe3ee;
-      --border-strong: #cbd5e1;
       --accent: #2563eb;
       --accent2: #06b6d4;
-      --accent-dark: #1d4ed8;
       --success: #059669;
       --success-bg: #ecfdf5;
       --danger: #dc2626;
       --danger-bg: #fef2f2;
-      --warning-bg: #fffbeb;
       --shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
       --shadow-soft: 0 8px 22px rgba(15, 23, 42, 0.08);
       --radius: 18px;
@@ -101,7 +98,7 @@
       border: 1px solid rgba(37, 99, 235, 0.18);
       border-radius: 999px;
       background: rgba(37, 99, 235, 0.08);
-      color: var(--accent-dark);
+      color: #1d4ed8;
       font-size: 13px;
       font-weight: 700;
       margin-bottom: 14px;
@@ -228,7 +225,7 @@
       padding: 12px 13px;
       background: #fff;
       color: var(--text);
-      transition: border 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+      transition: border 0.15s ease, box-shadow 0.15s ease;
     }
 
     input:focus,
@@ -289,10 +286,6 @@
       box-shadow: 0 14px 26px rgba(37, 99, 235, 0.25);
     }
 
-    button:active {
-      transform: translateY(0);
-    }
-
     button.ghost {
       color: #334155;
       background: #e2e8f0;
@@ -302,11 +295,6 @@
     button.ghost:hover {
       background: #cbd5e1;
       box-shadow: none;
-    }
-
-    button.secondary {
-      background: #0f172a;
-      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
     }
 
     .dropzone {
@@ -334,9 +322,10 @@
       place-items: center;
       margin: 0 auto 8px;
       border-radius: 16px;
-      color: var(--accent-dark);
+      color: #1d4ed8;
       background: rgba(37, 99, 235, 0.10);
       font-size: 22px;
+      font-weight: 900;
     }
 
     .dropzone-title {
@@ -460,82 +449,6 @@
       max-height: 260px;
     }
 
-    .search-box {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: end;
-    }
-
-    .result-card {
-      display: grid;
-      grid-template-columns: 210px 1fr;
-      gap: 16px;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px;
-      margin-top: 14px;
-      box-shadow: var(--shadow-soft);
-    }
-
-    .result-thumb {
-      min-height: 140px;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #f1f5f9;
-      display: grid;
-      place-items: center;
-      border: 1px solid var(--border);
-    }
-
-    .result-thumb img {
-      width: 100%;
-      height: 100%;
-      max-height: 190px;
-      object-fit: contain;
-      display: block;
-    }
-
-    .result-info h3 {
-      margin: 0 0 6px;
-      font-size: 17px;
-      line-height: 1.4;
-    }
-
-    .result-info p {
-      margin: 5px 0;
-      color: #334155;
-      font-size: 14px;
-      line-height: 1.55;
-    }
-
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin: 8px 0;
-    }
-
-    .chip {
-      display: inline-flex;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: #eff6ff;
-      color: #1d4ed8;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .muted {
-      color: var(--muted);
-    }
-
-    .small {
-      font-size: 12px !important;
-      color: var(--muted) !important;
-    }
-
     @media (max-width: 920px) {
       .hero,
       .layout {
@@ -544,10 +457,6 @@
 
       .hero-main {
         padding: 24px;
-      }
-
-      .search-box {
-        grid-template-columns: 1fr;
       }
     }
 
@@ -562,14 +471,6 @@
 
       .grid-2 {
         grid-template-columns: 1fr;
-      }
-
-      .result-card {
-        grid-template-columns: 1fr;
-      }
-
-      .result-thumb {
-        min-height: 190px;
       }
 
       .button-row {
@@ -587,11 +488,11 @@
   <main class="page">
     <section class="hero">
       <div class="hero-main">
-        <div class="eyebrow">Private Storage + Search Preview</div>
-        <h1>Media Archive</h1>
+        <div class="eyebrow">Private Storage Upload</div>
+        <h1>Media Archive Upload</h1>
         <p class="hero-text">
-          作成済みメディアをSupabaseへ保存し、タグ・要約・プロジェクト名で検索できます。
-          保存用メモを貼り付けるだけで、入力欄を自動整理します。
+          作成済みメディアをSupabaseへ保存します。保存用メモを貼り付けるだけで、
+          タイトル・タグ・要約などを自動入力できます。
         </p>
       </div>
 
@@ -616,8 +517,8 @@
           <div class="step">
             <div class="step-no">3</div>
             <div>
-              <p class="step-title">保存・検索</p>
-              <p class="step-desc">Private bucketのファイルを一時URLで表示します。</p>
+              <p class="step-title">Supabaseへ保存</p>
+              <p class="step-desc">保存後に一時URLでプレビューを表示します。</p>
             </div>
           </div>
         </div>
@@ -794,35 +695,9 @@ visual_asset
         </section>
       </aside>
     </section>
-
-    <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h2 class="panel-title">検索</h2>
-          <p class="panel-subtitle">タイトル・タグ・要約・プロジェクト名などから検索できます。</p>
-        </div>
-        <span class="badge">Search</span>
-      </div>
-
-      <div class="search-box">
-        <div>
-          <label for="searchQuery">検索キーワード</label>
-          <input id="searchQuery" placeholder="例：猫, ナガノAI, ICT, ポートレート" />
-        </div>
-
-        <div class="button-row">
-          <button id="searchButton" type="button">検索する</button>
-          <button id="clearSearchButton" type="button" class="ghost">クリア</button>
-        </div>
-      </div>
-
-      <div id="searchStatus" class="status hidden"></div>
-      <div id="searchResults"></div>
-    </section>
   </main>
 
   <script>
-    // ここを自分のSupabase Edge Function URLに置き換えてください。
     const FUNCTION_URL = "https://jkacguhaabaqtrjaahgl.supabase.co/functions/v1/media-archive";
 
     const uploadForm = document.getElementById("uploadForm");
@@ -831,10 +706,8 @@ visual_asset
 
     const parseStatus = document.getElementById("parseStatus");
     const saveStatus = document.getElementById("saveStatus");
-    const searchStatus = document.getElementById("searchStatus");
 
     const result = document.getElementById("result");
-    const searchResults = document.getElementById("searchResults");
 
     const dropzone = document.getElementById("dropzone");
     const localPreviewFrame = document.getElementById("localPreviewFrame");
@@ -1113,83 +986,6 @@ visual_asset
         }
       } catch (error) {
         setStatus(saveStatus, error.message, "error");
-      }
-    });
-
-    document.getElementById("searchButton").addEventListener("click", async () => {
-      const query = document.getElementById("searchQuery").value.trim();
-
-      searchResults.innerHTML = "";
-      setStatus(searchStatus, "検索中...", "");
-
-      try {
-        const response = await fetch(FUNCTION_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            action: "search",
-            query,
-            limit: 20
-          })
-        });
-
-        const json = await response.json();
-
-        if (!response.ok || json.error) {
-          throw new Error(json.error || "検索に失敗しました。");
-        }
-
-        if (!json.results || json.results.length === 0) {
-          setStatus(searchStatus, "該当する記録はありません。", "");
-          return;
-        }
-
-        setStatus(searchStatus, `${json.results.length}件見つかりました。`, "success");
-
-        for (const item of json.results) {
-          const div = document.createElement("div");
-          div.className = "result-card";
-
-          const tagsHtml = (item.tags || [])
-            .map((tag) => `<span class="chip">${escapeHtml(tag)}</span>`)
-            .join("");
-
-          div.innerHTML = `
-            <div class="result-thumb">
-              ${item.preview_url ? `<img src="${escapeHtml(item.preview_url)}" alt="">` : `<span class="muted">No preview</span>`}
-            </div>
-
-            <div class="result-info">
-              <h3>${escapeHtml(item.title)}</h3>
-              <div class="chips">${tagsHtml}</div>
-              <p><strong>キャラクター:</strong> ${escapeHtml((item.character_names || []).join(", "))}</p>
-              <p><strong>プロジェクト:</strong> ${escapeHtml(item.project_name || "")}</p>
-              <p><strong>要約:</strong> ${escapeHtml(item.summary || "")}</p>
-              <p><strong>最終メモ:</strong> ${escapeHtml(item.final_note || "")}</p>
-              <p class="small"><strong>storage_path:</strong> ${escapeHtml(item.storage_path || "")}</p>
-              <p class="small"><strong>created_at:</strong> ${escapeHtml(item.created_at || "")}</p>
-            </div>
-          `;
-
-          searchResults.appendChild(div);
-        }
-      } catch (error) {
-        setStatus(searchStatus, error.message, "error");
-      }
-    });
-
-    document.getElementById("clearSearchButton").addEventListener("click", () => {
-      document.getElementById("searchQuery").value = "";
-      searchResults.innerHTML = "";
-      setStatus(searchStatus, "", "");
-    });
-
-    document.getElementById("searchQuery").addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        document.getElementById("searchButton").click();
       }
     });
   </script>
