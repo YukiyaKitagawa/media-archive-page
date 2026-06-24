@@ -432,18 +432,17 @@
       margin-bottom: 14px;
       padding: 12px;
       border-radius: 12px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
     }
 
-    .memo-block.important {
-      background: #eff6ff;
-      border-color: #bfdbfe;
+    .memo-block:last-child {
+      margin-bottom: 0;
     }
 
     .memo-label {
       margin: 0 0 6px;
-      color: #334155;
+      color: #1e3a8a;
       font-size: 12px;
       font-weight: 950;
     }
@@ -455,48 +454,6 @@
       line-height: 1.75;
       white-space: pre-wrap;
       word-break: break-word;
-    }
-
-    .sub-info {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .mini-field {
-      padding: 10px;
-      border-radius: 12px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      min-width: 0;
-    }
-
-    .mini-label {
-      margin: 0 0 4px;
-      color: #64748b;
-      font-size: 11px;
-      font-weight: 900;
-    }
-
-    .mini-value {
-      margin: 0;
-      color: #0f172a;
-      font-size: 13px;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .mono {
-      font-family:
-        ui-monospace,
-        SFMono-Regular,
-        Menlo,
-        Monaco,
-        Consolas,
-        "Liberation Mono",
-        monospace;
-      font-size: 12px;
     }
 
     .toast {
@@ -548,10 +505,6 @@
       .detail {
         grid-template-rows: 320px auto auto;
       }
-
-      .sub-info {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -563,7 +516,7 @@
         <div class="logo">S</div>
         <div>
           <h1>Media Archive Search</h1>
-          <p class="subtitle">保存済みメディアを検索して、画像と保存情報を確認</p>
+          <p class="subtitle">保存済みメディアを検索して、画像とメモを確認</p>
         </div>
       </div>
 
@@ -617,7 +570,7 @@
           <div class="memo-scroll">
             <div class="memo-block">
               <p class="memo-label">案内</p>
-              <p class="memo-value">検索結果を選択すると、ここに「元の指示」「要約」「最終メモ」が表示されます。</p>
+              <p class="memo-value">検索結果を選択すると、ここに「元の指示」「要約」「最終メモ」のみ表示されます。</p>
             </div>
           </div>
         </div>
@@ -770,7 +723,7 @@
         <div class="memo-scroll">
           <div class="memo-block">
             <p class="memo-label">案内</p>
-            <p class="memo-value">検索結果を選択すると、ここに「元の指示」「要約」「最終メモ」が表示されます。</p>
+            <p class="memo-value">検索結果を選択すると、ここに「元の指示」「要約」「最終メモ」のみ表示されます。</p>
           </div>
         </div>
       `;
@@ -794,15 +747,11 @@
 
     function renderDetail(item) {
       const title = item.title || "無題";
-      const kind = item.kind || "visual_asset";
-      const tags = formatArray(item.tags);
-      const characters = formatArray(item.character_names);
       const projectName = item.project_name || "未指定";
+      const createdAt = formatDate(item.created_at);
       const originalRequest = item.original_request || "未指定";
       const summary = item.summary || "未指定";
       const finalNote = item.final_note || "未指定";
-      const storagePath = item.storage_path || "未指定";
-      const createdAt = formatDate(item.created_at);
       const previewUrl = item.preview_url || "";
 
       detailEl.innerHTML = `
@@ -820,44 +769,30 @@
 
           <div class="detail-actions">
             <button type="button" id="openPreviewButton" ${previewUrl ? "" : "disabled"}>プレビューを開く</button>
-            <button type="button" id="copyInfoButton" class="ghost">保存情報コピー</button>
-            <button type="button" id="copyPathButton" class="ghost">Pathコピー</button>
+            <button type="button" id="copyMemoButton" class="ghost">メモコピー</button>
           </div>
         </div>
 
         <div class="memo-scroll">
-          <div class="sub-info">
-            ${miniFieldHtml("種別", kind)}
-            ${miniFieldHtml("キャラクター名", characters)}
-            ${miniFieldHtml("プロジェクト名", projectName)}
-            ${miniFieldHtml("タグ", tags)}
-          </div>
-
-          <div class="memo-block important">
+          <div class="memo-block">
             <p class="memo-label">元の指示</p>
             <p class="memo-value">${escapeHtml(originalRequest)}</p>
           </div>
 
-          <div class="memo-block important">
+          <div class="memo-block">
             <p class="memo-label">要約</p>
             <p class="memo-value">${escapeHtml(summary)}</p>
           </div>
 
-          <div class="memo-block important">
+          <div class="memo-block">
             <p class="memo-label">最終メモ</p>
             <p class="memo-value">${escapeHtml(finalNote)}</p>
-          </div>
-
-          <div class="memo-block">
-            <p class="memo-label">Storage Path</p>
-            <p class="memo-value mono">${escapeHtml(storagePath)}</p>
           </div>
         </div>
       `;
 
       const openPreviewButton = document.getElementById("openPreviewButton");
-      const copyInfoButton = document.getElementById("copyInfoButton");
-      const copyPathButton = document.getElementById("copyPathButton");
+      const copyMemoButton = document.getElementById("copyMemoButton");
 
       if (openPreviewButton) {
         openPreviewButton.addEventListener("click", () => {
@@ -867,50 +802,14 @@
         });
       }
 
-      copyInfoButton.addEventListener("click", async () => {
-        await copyText(buildCopyInfo(item));
-        showToast("保存情報をコピーしました。");
-      });
-
-      copyPathButton.addEventListener("click", async () => {
-        await copyText(storagePath);
-        showToast("Storage Pathをコピーしました。");
+      copyMemoButton.addEventListener("click", async () => {
+        await copyText(buildMemoCopyText(item));
+        showToast("メモをコピーしました。");
       });
     }
 
-    function miniFieldHtml(label, value) {
-      return `
-        <div class="mini-field">
-          <p class="mini-label">${escapeHtml(label)}</p>
-          <p class="mini-value">${escapeHtml(value || "未指定")}</p>
-        </div>
-      `;
-    }
-
-    function buildCopyInfo(item) {
-      return `# メディアアーカイブ保存情報
-
-## タイトル
-
-${item.title || "未指定"}
-
-## 種別
-
-${item.kind || "visual_asset"}
-
-## タグ
-
-${formatArray(item.tags)}
-
-## キャラクター名
-
-${formatArray(item.character_names)}
-
-## プロジェクト名
-
-${item.project_name || "未指定"}
-
-## 元の指示
+    function buildMemoCopyText(item) {
+      return `## 元の指示
 
 ${item.original_request || "未指定"}
 
@@ -921,10 +820,6 @@ ${item.summary || "未指定"}
 ## 最終メモ
 
 ${item.final_note || "未指定"}
-
-## Storage Path
-
-${item.storage_path || "未指定"}
 `;
     }
 
