@@ -785,7 +785,7 @@
 
           <div class="detail-actions">
             <button type="button" id="openPreviewButton" ${previewUrl ? "" : "disabled"}>プレビューを開く</button>
-            <button type="button" id="copyMemoButton" class="ghost">メモコピー</button>
+            <button type="button" id="copyFinalNoteButton" class="ghost">最終メモコピー</button>
           </div>
         </div>
 
@@ -808,7 +808,7 @@
       `;
 
       const openPreviewButton = document.getElementById("openPreviewButton");
-      const copyMemoButton = document.getElementById("copyMemoButton");
+      const copyFinalNoteButton = document.getElementById("copyFinalNoteButton");
 
       if (openPreviewButton) {
         openPreviewButton.addEventListener("click", () => {
@@ -818,25 +818,10 @@
         });
       }
 
-      copyMemoButton.addEventListener("click", async () => {
-        await copyText(buildMemoCopyText(item));
-        showToast("メモをコピーしました。");
+      copyFinalNoteButton.addEventListener("click", async () => {
+        await copyText(finalNote);
+        showToast("最終メモをコピーしました。");
       });
-    }
-
-    function buildMemoCopyText(item) {
-      return `## 元の指示
-
-${cleanMemoText(item.original_request)}
-
-## 要約
-
-${cleanMemoText(item.summary)}
-
-## 最終メモ
-
-${cleanMemoText(item.final_note)}
-`;
     }
 
     async function copyText(text) {
