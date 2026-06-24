@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Media Archive</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 840px;
+      margin: 32px auto;
+      padding: 0 16px;
+      line-height: 1.7;
+    }
+    label {
+      display: block;
+      margin-top: 16px;
+      font-weight: 700;
+    }
+    input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      font-size: 16px;
+    }
+    textarea {
+      min-height: 90px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    img {
+      max-width: 100%;
+      margin-top: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    pre {
+      white-space: pre-wrap;
+      background: #f6f6f6;
+      padding: 12px;
+      border-radius: 8px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Media Archive</h1>
+
+  <h2>保存</h2>
+
+  <form id="uploadForm">
+    <label>ファイル</label>
+    <input type="file" name="file" accept="image/*" required />
+
+    <label>タイトル</label>
+    <input name="title" required placeholder="例：かわいい猫の温かいポートレート" />
+
+    <label>種別</label>
+    <input name="kind" value="visual_asset" />
+
+    <label>タグ（カンマ区切り）</label>
+    <input name="tags" placeholder="猫, ポートレート, かわいい, 室内" />
+
+    <label>キャラクター名（カンマ区切り）</label>
+    <input name="character_names" placeholder="ナガノAI, ナガノ玄" />
+
+    <label>プロジェクト名</label>
+    <input name="project_name" placeholder="例：メディアアーカイブ" />
+
+    <label>元の依頼</label>
+    <textarea name="original_request" placeholder="最初に入力した依頼内容"></textarea>
+
+    <label>要約</label>
+    <textarea name="summary" placeholder="内容の要約"></textarea>
+
+    <label>最終メモ</label>
+    <textarea name="final_note" placeholder="あとで検索・再利用したい情報"></textarea>
+
+    <button type="submit">保存する</button>
+  </form>
+
+  <h3>保存結果</h3>
+  <pre id="result"></pre>
+  <div id="preview"></div>
+
+  <hr>
+
+  <h2>検索</h2>
+  <input id="searchQuery" placeholder="例：猫, ナガノAI, ICT, ポートレート" />
+  <button id="searchButton" type="button">検索する</button>
+
+  <div id="searchResults"></div>
+
+  <script>
+    const FUNCTION_URL = "https://jkacguhaabaqtrjaahgl.supabase.co/functions/v1/media-archive";
+
+    const form = document.getElementById("uploadForm");
+    const result = document.getElementById("result");
+    const preview = document.getElementById("preview");
+    const searchResults = document.getElementById("searchResults");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      result.textContent = "保存中...";
+      preview.innerHTML = "";
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch(FUNCTION_URL, {
+          method: "POST",
+          body: formData
+        });
+
+        const json = await response.json();
+
+        if (!response.ok || json.error) {
+          throw new Error(json.error || "保存に失敗しました");
+        }
+
+        result.textContent = JSON.stringify(json, null, 2);
+
+        if (json.result && json.result.preview_url) {
+          preview.innerHTML = `<img src="${json.result.preview_url}" alt="preview">`;
+        }
+      } catch (error) {
+        result.textContent = error.message;
+      }
+    });
+
+    document.getElementById("searchButton").addEventListener("click", async () => {
+      const query = document.getElementById("searchQuery").value;
+      searchResults.innerHTML = "検索中...";
+
+      try {
+        const response = await fetch(FUNCTION_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            action: "search",
+            query,
+            limit: 20
+          })
+        });
+
+        const json = await response.json();
+
+        if (!response.ok || json.error) {
+          throw new Error(json.error || "検索に失敗しました");
+        }
+
+        searchResults.innerHTML = "";
+
+        if (!json.results || json.results.length === 0) {
+          searchResults.innerHTML = "該当する記録はありません。";
+          return;
+        }
+
+        for (const item of json.results) {
+          const div = document.createElement("div");
+          div.className = "card";
+
+          div.innerHTML = `
+            <h3>${escapeHtml(item.title || "")}</h3>
+            ${item.preview_url ? `<img src="${item.preview_url}" alt="">` : ""}
+            <p><strong>タグ:</strong> ${escapeHtml((item.tags || []).join(", "))}</p>
+            <p><strong>キャラクター:</strong> ${escapeHtml((item.character_names || []).join(", "))}</p>
+            <p><strong>プロジェクト:</strong> ${escapeHtml(item.project_name || "")}</p>
+            <p><strong>要約:</strong> ${escapeHtml(item.summary || "")}</p>
+            <p><strong>最終メモ:</strong> ${escapeHtml(item.final_note || "")}</p>
+            <p><strong>storage_path:</strong> ${escapeHtml(item.storage_path || "")}</p>
+          `;
+
+          searchResults.appendChild(div);
+        }
+      } catch (error) {
+        searchResults.innerHTML = error.message;
+      }
+    });
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</body>
+</html>
