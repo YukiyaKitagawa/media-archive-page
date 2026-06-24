@@ -239,7 +239,7 @@
       display: grid;
       grid-template-columns: 1.2fr 1fr;
       gap: 10px;
-      align-items: end;
+      align-items: start;
     }
 
     .memo-row {
@@ -247,6 +247,7 @@
       grid-template-columns: 1fr auto auto;
       gap: 8px;
       align-items: end;
+      min-height: 68px;
     }
 
     .file-row {
@@ -254,12 +255,15 @@
       grid-template-columns: 1fr auto;
       gap: 8px;
       align-items: end;
+      min-height: 68px;
     }
 
     #archiveMemo {
       height: 38px;
       min-height: 38px;
-      max-height: 90px;
+      max-height: 38px;
+      resize: none;
+      overflow: hidden;
       font-family:
         ui-monospace,
         SFMono-Regular,
@@ -276,11 +280,12 @@
       width: 100%;
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 7px 10px;
+      padding: 6px 10px;
       background: #fff;
       color: var(--text);
       font-size: 13px;
-      height: 37px;
+      height: 38px;
+      min-height: 38px;
     }
 
     .compact-note {
@@ -302,7 +307,8 @@
       box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
       transition: transform 0.15s ease, filter 0.15s ease;
       white-space: nowrap;
-      height: 37px;
+      height: 38px;
+      min-height: 38px;
     }
 
     button:hover {
@@ -323,13 +329,14 @@
     .preview-stack {
       min-height: 0;
       display: grid;
-      grid-template-rows: 1fr 1fr;
+      grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
       gap: 12px;
       flex: 1;
     }
 
     .preview-card {
       min-height: 0;
+      max-height: 100%;
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 14px;
@@ -347,6 +354,7 @@
       border-bottom: 1px solid var(--border);
       background: #f8fafc;
       min-height: 40px;
+      flex: 0 0 auto;
     }
 
     .preview-title {
@@ -366,6 +374,7 @@
 
     .preview-body {
       min-height: 0;
+      overflow: hidden;
       flex: 1;
       padding: 9px;
     }
@@ -373,7 +382,8 @@
     .image-frame {
       width: 100%;
       height: 100%;
-      min-height: 210px;
+      max-height: 100%;
+      min-height: 0;
       display: grid;
       place-items: center;
       overflow: hidden;
@@ -390,8 +400,10 @@
     .image-frame img {
       width: 100%;
       height: 100%;
+      max-width: 100%;
       max-height: 100%;
       object-fit: contain;
+      object-position: center;
       display: block;
       border-radius: 9px;
     }
