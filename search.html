@@ -604,6 +604,22 @@
         .replaceAll("'", "&#039;");
     }
 
+    function cleanMemoText(value) {
+      let text = String(value || "").trim();
+
+      text = text.replace(
+        /\n?\s*---\s*\n+\s*アップロードサイト：\s*\n+\s*https:\/\/yukiyakitagawa\.github\.io\/media-archive-page\/?\s*$/g,
+        ""
+      );
+
+      text = text.replace(
+        /\n?\s*---\s*\n+\s*アップロードサイト\s*:\s*\n+\s*https:\/\/yukiyakitagawa\.github\.io\/media-archive-page\/?\s*$/g,
+        ""
+      );
+
+      return text.trim() || "未指定";
+    }
+
     function formatArray(value) {
       if (!value) return "なし";
       if (Array.isArray(value)) {
@@ -749,9 +765,9 @@
       const title = item.title || "無題";
       const projectName = item.project_name || "未指定";
       const createdAt = formatDate(item.created_at);
-      const originalRequest = item.original_request || "未指定";
-      const summary = item.summary || "未指定";
-      const finalNote = item.final_note || "未指定";
+      const originalRequest = cleanMemoText(item.original_request);
+      const summary = cleanMemoText(item.summary);
+      const finalNote = cleanMemoText(item.final_note);
       const previewUrl = item.preview_url || "";
 
       detailEl.innerHTML = `
@@ -811,15 +827,15 @@
     function buildMemoCopyText(item) {
       return `## 元の指示
 
-${item.original_request || "未指定"}
+${cleanMemoText(item.original_request)}
 
 ## 要約
 
-${item.summary || "未指定"}
+${cleanMemoText(item.summary)}
 
 ## 最終メモ
 
-${item.final_note || "未指定"}
+${cleanMemoText(item.final_note)}
 `;
     }
 
