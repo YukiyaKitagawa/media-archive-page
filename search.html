@@ -456,6 +456,34 @@
       word-break: break-word;
     }
 
+    .settings-list {
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .settings-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .settings-key {
+      color: #1e3a8a;
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .settings-value {
+      color: #0f172a;
+      font-size: 14px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
     .toast {
       position: fixed;
       right: 16px;
@@ -554,7 +582,7 @@
       <section class="panel">
         <div class="panel-header">
           <h2 class="panel-title">詳細</h2>
-          <span class="hint">プレビュー / 元の指示 / 要約 / 最終メモ</span>
+          <span class="hint">プレビュー / 元の指示 / 要約 / 最終メモ / 選択設定</span>
         </div>
 
         <div id="detail" class="detail">
@@ -570,7 +598,7 @@
           <div class="memo-scroll">
             <div class="memo-block">
               <p class="memo-label">案内</p>
-              <p class="memo-value">検索結果を選択すると、ここに「元の指示」「要約」「最終メモ」のみ表示されます。</p>
+              <p class="memo-value">検索結果を選択すると、ここに「元の指示」「要約」「最終メモ」「選択設定」が表示されます。</p>
             </div>
           </div>
         </div>
@@ -674,6 +702,100 @@
         .join("");
     }
 
+    function formatSettingsList(value) {
+      if (!Array.isArray(value) || value.length === 0) {
+        return "なし";
+      }
+
+      return value.join(", ");
+    }
+
+    function summarizePromptSettings(json) {
+      const selectedSettings = json?.selectedSettings || {};
+      const uiState = json?.uiState || {};
+
+      const personas = Array.isArray(selectedSettings.personas)
+        ? selectedSettings.personas.map((persona) => persona?.name).filter(Boolean)
+        : [];
+
+      const characters = Array.isArray(selectedSettings.characters)
+        ? selectedSettings.characters.map((character) => character?.name).filter(Boolean)
+        : [];
+
+      const noneOptions = Array.isArray(selectedSettings.noneOptions)
+        ? selectedSettings.noneOptions.map((option) => option?.label || option?.value).filter(Boolean)
+        : [];
+
+      return {
+        personaCategoryName: uiState.personaCategoryName || "未指定",
+        characterCategoryName: uiState.characterCategoryName || "未指定",
+        personas,
+        characters,
+        collabPatternLabel: selectedSettings.collabPatternLabel || selectedSettings.collabPattern || "未指定",
+        noneOptions,
+      };
+    }
+
+    function settingsRow(label, value) {
+      return `
+        <div class="settings-row">
+          <div class="settings-key">${escapeHtml(label)}</div>
+          <div class="settings-value">${escapeHtml(value)}</div>
+        </div>
+      `;
+    }
+
+    function renderPromptSettingsSummary(summary) {
+      return `
+        <div class="settings-list">
+          ${settingsRow("絵師カテゴリ", summary.personaCategoryName)}
+          ${settingsRow("キャラカテゴリ", summary.characterCategoryName)}
+          ${settingsRow("選択絵師", formatSettingsList(summary.personas))}
+          ${settingsRow("選択キャラクター", formatSettingsList(summary.characters))}
+          ${settingsRow("コラボパターン", summary.collabPatternLabel)}
+          ${settingsRow("オプション", formatSettingsList(summary.noneOptions))}
+        </div>
+      `;
+    }
+
+    async function loadPromptSettings(url) {
+      const block = document.getElementById("promptSettingsBlock");
+      if (!block) return;
+
+      if (!url) {
+        block.innerHTML = `
+          <p class="memo-label">選択設定</p>
+          <p class="memo-value">設定付きJSONは保存されていません。</p>
+        `;
+        return;
+      }
+
+      block.innerHTML = `
+        <p class="memo-label">選択設定</p>
+        <p class="memo-value">設定付きJSONを読み込み中...</p>
+      `;
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("設定付きJSONを読み込めませんでした。");
+        }
+
+        const json = await response.json();
+        const summary = summarizePromptSettings(json);
+
+        block.innerHTML = `
+          <p class="memo-label">選択設定</p>
+          ${renderPromptSettingsSummary(summary)}
+        `;
+      } catch (error) {
+        block.innerHTML = `
+          <p class="memo-label">選択設定</p>
+          <p class="memo-value">${escapeHtml(error.message || "設定付きJSONを読み込めませんでした。")}</p>
+        `;
+      }
+    }
+
     function renderResults(results) {
       currentResults = results || [];
       countBadge.textContent = `${currentResults.length}件`;
@@ -739,7 +861,7 @@
         <div class="memo-scroll">
           <div class="memo-block">
             <p class="memo-label">案内</p>
-            <p class="memo-value">検索結果を選択すると、ここに「元の指示」「要約」「最終メモ」のみ表示されます。</p>
+            <p class="memo-value">検索結果を選択すると、ここに「元の指示」「要約」「最終メモ」「選択設定」が表示されます。</p>
           </div>
         </div>
       `;
@@ -769,6 +891,7 @@
       const summary = cleanMemoText(item.summary);
       const finalNote = cleanMemoText(item.final_note);
       const previewUrl = item.preview_url || "";
+      const promptJsonUrl = item.prompt_json_url || "";
 
       detailEl.innerHTML = `
         <div class="preview-box">
@@ -785,6 +908,7 @@
 
           <div class="detail-actions">
             <button type="button" id="openPreviewButton" ${previewUrl ? "" : "disabled"}>プレビューを開く</button>
+            <button type="button" id="openPromptJsonButton" class="ghost" ${promptJsonUrl ? "" : "disabled"}>設定JSONを開く</button>
             <button type="button" id="copyFinalNoteButton" class="ghost">最終メモコピー</button>
           </div>
         </div>
@@ -804,10 +928,16 @@
             <p class="memo-label">最終メモ</p>
             <p class="memo-value">${escapeHtml(finalNote)}</p>
           </div>
+
+          <div class="memo-block" id="promptSettingsBlock">
+            <p class="memo-label">選択設定</p>
+            <p class="memo-value">設定付きJSONを確認しています...</p>
+          </div>
         </div>
       `;
 
       const openPreviewButton = document.getElementById("openPreviewButton");
+      const openPromptJsonButton = document.getElementById("openPromptJsonButton");
       const copyFinalNoteButton = document.getElementById("copyFinalNoteButton");
 
       if (openPreviewButton) {
@@ -818,10 +948,20 @@
         });
       }
 
+      if (openPromptJsonButton) {
+        openPromptJsonButton.addEventListener("click", () => {
+          if (promptJsonUrl) {
+            window.open(promptJsonUrl, "_blank", "noopener,noreferrer");
+          }
+        });
+      }
+
       copyFinalNoteButton.addEventListener("click", async () => {
         await copyText(finalNote);
         showToast("最終メモをコピーしました。");
       });
+
+      loadPromptSettings(promptJsonUrl);
     }
 
     async function copyText(text) {
