@@ -628,6 +628,7 @@
           <div class="actions-fixed">
             <div>
               <button type="submit" form="uploadForm">Supabaseへ保存</button>
+              <button type="button" id="copyInstructionButton" class="ghost">保存メモ指示文コピー</button>
               <button type="button" id="clearFormButton" class="ghost">リセット</button>
             </div>
           </div>
@@ -658,6 +659,67 @@
     const savedPreviewTitle = document.getElementById("savedPreviewTitle");
 
     let localObjectUrl = null;
+
+    const SAVE_MEMO_INSTRUCTION = `あなたは、画像生成後に「メディアアーカイブ保存用メモ」を作成するアシスタントです。
+
+以下のルールに従って、保存用メモを作成してください。
+
+## 出力形式
+
+保存用メモを出力するときは、余計な説明を加えず、必ず以下の形式で出力してください。
+
+# メディアアーカイブ保存用メモ
+
+## タイトル
+
+生成画像の内容に合う短いタイトル
+
+## 種別
+
+visual_asset
+
+## タグ
+
+検索しやすいタグをカンマ区切りで5〜10個
+
+## キャラクター名
+
+該当があればキャラクター名。なければ「なし」
+
+## プロジェクト名
+
+該当があればプロジェクト名。なければ「メディアアーカイブ」
+
+## 元の依頼
+
+ユーザーが画像生成時に入力した依頼内容。分からない場合は「未指定」
+
+## 要約
+
+生成画像の内容を1〜2文で簡潔に要約
+
+## 最終メモ
+
+後から検索・再利用しやすいように、被写体、背景、雰囲気、構図、色味、用途、固有名詞などを簡潔にまとめる
+
+---
+
+アップロードサイト：
+https://yukiyakitagawa.github.io/media-archive-page/
+
+## 保存用メモ作成時の注意事項
+
+* 見出し名と順番は変更しない
+* 「種別」は必ず「visual_asset」と書く
+* タグはカンマ区切りにする
+* タグは5〜10個にする
+* 不明な情報は「なし」または「未指定」と書く
+* キャラクター名、プロジェクト名、会社名などはユーザー指定を優先する
+* 添付画像がある場合は、その見た目や内容も参考にする
+* 人物の実名や不明な固有名詞は推測しない
+* 画像生成時の依頼文が分かる場合は、「元の依頼」にできるだけその内容を反映する
+* 画像の内容を誇張しすぎず、後から検索・再利用しやすい実用的なメモにする
+* 保存用メモの最後には必ずアップロードサイトURLを表示する`;
 
     function setStatus(message, type) {
       saveStatus.textContent = message || "待機中";
@@ -830,6 +892,23 @@
       savedPreviewFrame.innerHTML = `<img src="${escapeHtml(url)}" alt="saved preview">`;
     }
 
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (_e) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        textarea.style.top = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+    }
+
     function resetLocalPreview() {
       if (localObjectUrl) {
         URL.revokeObjectURL(localObjectUrl);
@@ -839,6 +918,15 @@
       fileInput.value = "";
       showLocalPreview(null);
     }
+
+    document.getElementById("copyInstructionButton").addEventListener("click", async () => {
+      try {
+        await copyText(SAVE_MEMO_INSTRUCTION);
+        setStatus("保存メモ作成用の指示文をコピーしました。", "success");
+      } catch (error) {
+        setStatus(error.message || "指示文のコピーに失敗しました。", "error");
+      }
+    });
 
     document.getElementById("parseMemoButton").addEventListener("click", fillFormFromMemo);
 
