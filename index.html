@@ -237,7 +237,7 @@
 
     .prep-grid {
       display: grid;
-      grid-template-columns: 1.2fr 1fr;
+      grid-template-columns: 1.2fr 0.9fr 0.9fr;
       gap: 10px;
       align-items: start;
     }
@@ -543,7 +543,7 @@
         <section class="mini-panel">
           <div class="panel-header">
             <h2 class="panel-title">保存準備</h2>
-            <span class="badge">Memo / File</span>
+            <span class="badge">Memo / File / JSON</span>
           </div>
 
           <div class="prep-grid">
@@ -568,6 +568,15 @@
               </div>
 
               <button type="button" id="clearFileButton" class="ghost">画像解除</button>
+            </div>
+
+            <div class="file-row">
+              <div>
+                <label>設定付きJSON</label>
+                <input class="file-visible" type="file" name="prompt_json" accept=".json,application/json" form="uploadForm" />
+              </div>
+
+              <button type="button" id="clearJsonButton" class="ghost">JSON解除</button>
             </div>
           </div>
         </section>
@@ -634,6 +643,7 @@
 
     const uploadForm = document.getElementById("uploadForm");
     const fileInput = document.querySelector('input[name="file"]');
+    const promptJsonInput = document.querySelector('input[name="prompt_json"]');
     const archiveMemo = document.getElementById("archiveMemo");
 
     const parseStatus = document.getElementById("parseStatus");
@@ -843,6 +853,28 @@
       setStatus("画像選択を解除しました。", "");
     });
 
+    document.getElementById("clearJsonButton").addEventListener("click", () => {
+      promptJsonInput.value = "";
+      setStatus("設定付きJSONを解除しました。", "");
+    });
+
+    promptJsonInput.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+
+      if (!file) {
+        setStatus("設定付きJSONは未選択です。", "");
+        return;
+      }
+
+      if (!file.name.toLowerCase().endsWith(".json") && file.type !== "application/json") {
+        setStatus("JSONファイルを選択してください。", "error");
+        promptJsonInput.value = "";
+        return;
+      }
+
+      setStatus(`設定付きJSON選択中: ${file.name}`, "");
+    });
+
     document.getElementById("clearFormButton").addEventListener("click", () => {
       uploadForm.reset();
       uploadForm.elements["kind"].value = "visual_asset";
@@ -851,6 +883,7 @@
       archiveMemo.value = "";
       parseStatus.textContent = "";
       resetLocalPreview();
+      promptJsonInput.value = "";
       showSavedPreview(null, "");
       setStatus("待機中", "");
     });
@@ -872,6 +905,10 @@
 
       if (fileInput.files[0]) {
         formData.set("file", fileInput.files[0]);
+      }
+
+      if (promptJsonInput.files[0]) {
+        formData.set("prompt_json", promptJsonInput.files[0]);
       }
 
       try {
